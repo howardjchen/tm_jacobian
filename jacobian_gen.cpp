@@ -6,16 +6,16 @@
 #include <math.h>
 #include <vector>
 
-#define D1 145.1
+#define D1 0.1451
 #define D2 0
 #define D3 0
-#define D4 -122.2
-#define D5 106
-#define D6 114.4
+#define D4 -0.1222
+#define D5 0.106
+#define D6 0.1144
 
 #define A1 0
-#define A2 329
-#define A3 311.5
+#define A2 0.329
+#define A3 0.3115
 #define A4 0
 #define A5 0
 #define A6 0
@@ -41,11 +41,13 @@ Eigen::Matrix<float, 6, 6> Jacobian_gen(Eigen::Matrix<float, 6,1>);
 int main(int argc, char const *argv[])
 {
 	Eigen::Matrix<float, 6, 1> jointspd = Eigen::Matrix<float, 6, 1>::Zero();
+	Eigen::Matrix<float, 6, 1> effspd = Eigen::Matrix<float, 6, 1>::Zero();
 	Eigen::Matrix<float, 6, 1> q;
 	Eigen::Matrix<float, 6, 1> home;
 
 	home << 0, -PI*0.5, 0, PI*0.5, 0, 0;
-	jointspd << 1,1,1,1,1,1;
+	//jointspd << 0.3158, -0.0940, 0.1018, -0.0156, -0.3146, -0.0000;
+	effspd << 0.00328786, 0.106561, 0.000812383, 0.000426278, -0.00778993, 0.00120008;
 
 	q << 	strtod(argv[1],NULL),
 			strtod(argv[2],NULL),
@@ -54,18 +56,30 @@ int main(int argc, char const *argv[])
 			strtod(argv[5],NULL),
 			strtod(argv[6],NULL);
 
-	q *= DEG2RAD;
+	//q *= DEG2RAD;
 	q += home;
 
 	Eigen::Matrix<float, 6, 6> jacobian = Jacobian_gen(q);
+	cout << "======================================="<<endl;
 	cout << ">>>> jacobian" << endl;
 	cout << jacobian << endl;
+	cout << "======================================="<<endl;
 
-
-
-	jointspd = jacobian*jointspd;
-	cout << ">>>> joint speed" << endl;
+/*
+	effspd = jacobian*jointspd;
+	//effspd *= RAD2DEG;
+	cout << "==================="<<endl;
+	cout << ">>>> effspd speed" << endl;
+	cout << effspd << endl;
+	cout << "==================="<<endl;
+*/
+	
+	jointspd = jacobian.inverse()*effspd;
+	//effspd *= RAD2DEG;
+	cout << "==================="<<endl;
+	cout << ">>>> jointspd speed" << endl;
 	cout << jointspd << endl;
+	cout << "==================="<<endl;
 
 
 
@@ -76,8 +90,10 @@ int main(int argc, char const *argv[])
 	T_ *= TFMatrix(q(4),D5,ALPHA5*DEG2RAD,A5);
 	T_ *= TFMatrix(q(5),D6,ALPHA6*DEG2RAD,A6);
 
+	cout << "======================================="<<endl;
 	cout << ">>>> T6" << endl;
 	cout << T_ << endl;
+	cout << "======================================="<<endl;
 	return 0;
 }
 
