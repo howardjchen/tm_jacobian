@@ -1,3 +1,23 @@
+/*********************************************************************
+ * jacobian_cpp.cpp
+ *
+ * Copyright (c) 2017, ISCI / National Chiao Tung University (NCTU)
+ *
+ * Author: Howard Chen (s880367@gmail.com)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ **********************************************************************/
+
 #include <iostream>
 #include <Eigen/Dense>
 #include <stdio.h>
@@ -36,7 +56,7 @@ using namespace std;
 
 Eigen::Matrix<float,4,4> TFMatrix(float,float,float,float);
 Eigen::Matrix<float, 6, 6> Jacobian_gen(Eigen::Matrix<float, 6,1>);
-
+void PrintMatrix(Eigen::MatrixXf InputMatrix);
 
 int main(int argc, char const *argv[])
 {
@@ -62,7 +82,7 @@ int main(int argc, char const *argv[])
 	Eigen::Matrix<float, 6, 6> jacobian = Jacobian_gen(q);
 	cout << "======================================="<<endl;
 	cout << ">>>> jacobian" << endl;
-	cout << jacobian << endl;
+	PrintMatrix(jacobian);
 	cout << "======================================="<<endl;
 
 /*
@@ -72,7 +92,7 @@ int main(int argc, char const *argv[])
 	cout << ">>>> effspd speed" << endl;
 	cout << effspd << endl;
 	cout << "==================="<<endl;
-*/
+
 	
 	jointspd = jacobian.inverse()*effspd;
 	//effspd *= RAD2DEG;
@@ -80,20 +100,41 @@ int main(int argc, char const *argv[])
 	cout << ">>>> jointspd speed" << endl;
 	cout << jointspd << endl;
 	cout << "==================="<<endl;
+*/
 
 
-
-	Eigen::Matrix<float, 4,4> T_ = TFMatrix(q(0),D1,ALPHA1*DEG2RAD,A1);
+	Eigen::Matrix<float, 4,4> T_, T_trans;
+	T_  = TFMatrix(q(0),D1,ALPHA1*DEG2RAD,A1);
 	T_ *= TFMatrix(q(1),D2,ALPHA2*DEG2RAD,A2);
 	T_ *= TFMatrix(q(2),D3,ALPHA3*DEG2RAD,A3);
 	T_ *= TFMatrix(q(3),D4,ALPHA4*DEG2RAD,A4);
 	T_ *= TFMatrix(q(4),D5,ALPHA5*DEG2RAD,A5);
 	T_ *= TFMatrix(q(5),D6,ALPHA6*DEG2RAD,A6);
 
-	cout << "======================================="<<endl;
-	cout << ">>>> T6" << endl;
-	cout << T_ << endl;
-	cout << "======================================="<<endl;
+	double InverseKinematics_T[15];
+	
+
+	T_trans = T_.transpose();
+
+	cout << ">>>> T_" << endl;
+	PrintMatrix(T_);
+
+
+	cout << ">>>> InverseKinematics_T" << endl;
+	int count = 0;
+	for (int i = 0; i < 16; ++i)
+	{
+		InverseKinematics_T[i] = T_trans(i);
+		printf("%10.4f ",InverseKinematics_T[i]);
+		if (count == 3)
+		{
+			count = 0;
+			printf("\n");
+		}
+		else
+			count++;
+	}
+
 	return 0;
 }
 
@@ -119,4 +160,24 @@ Eigen::Matrix<float,4,4> TFMatrix(float th, float d, float Alpha, float a)
        			 0.,          sin(Alpha),          cos(Alpha),         d,
        		 	 0.,                  0.,                  0.,         1.;
     return T_;
+}
+
+void PrintMatrix(Eigen::MatrixXf InputMatrix)
+{
+	Eigen::MatrixXf Input_trans = InputMatrix.transpose();
+	short count = 0;
+	int row = InputMatrix.rows();
+	int col = InputMatrix.cols();
+
+	for (int i = 0; i < row*col; ++i)
+	{
+		printf("%10.4f ", Input_trans(i));
+		if (count == row-1)
+		{
+			count = 0;
+			printf("\n");
+		}
+		else
+			count++;
+	}
 }
