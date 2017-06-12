@@ -25,6 +25,10 @@
 #include <cmath>
 #include <math.h>
 #include <vector>
+#include "tm_kinematics/tm_kin.h"
+#include <unistd.h>
+#include <sys/time.h>
+
 
 #define D1 0.1451
 #define D2 0
@@ -54,91 +58,6 @@
 
 using namespace std;
 
-Eigen::Matrix<float,4,4> TFMatrix(float,float,float,float);
-Eigen::Matrix<float, 6, 6> Jacobian_gen(Eigen::Matrix<float, 6,1>);
-void PrintMatrix(Eigen::MatrixXf InputMatrix);
-
-int main(int argc, char const *argv[])
-{
-	Eigen::Matrix<float, 6, 1> jointspd = Eigen::Matrix<float, 6, 1>::Zero();
-	Eigen::Matrix<float, 6, 1> effspd = Eigen::Matrix<float, 6, 1>::Zero();
-	Eigen::Matrix<float, 6, 1> q;
-	Eigen::Matrix<float, 6, 1> home;
-
-	home << 0, -PI*0.5, 0, PI*0.5, 0, 0;
-	//jointspd << 0.3158, -0.0940, 0.1018, -0.0156, -0.3146, -0.0000;
-	effspd << 0.00328786, 0.106561, 0.000812383, 0.000426278, -0.00778993, 0.00120008;
-
-	q << 	strtod(argv[1],NULL),
-			strtod(argv[2],NULL),
-			strtod(argv[3],NULL),
-			strtod(argv[4],NULL),
-			strtod(argv[5],NULL),
-			strtod(argv[6],NULL);
-
-	//q *= DEG2RAD;
-	q += home;
-
-	Eigen::Matrix<float, 6, 6> jacobian = Jacobian_gen(q);
-	cout << "======================================="<<endl;
-	cout << ">>>> jacobian" << endl;
-	PrintMatrix(jacobian);
-	cout << "======================================="<<endl;
-
-/*
-	effspd = jacobian*jointspd;
-	//effspd *= RAD2DEG;
-	cout << "==================="<<endl;
-	cout << ">>>> effspd speed" << endl;
-	cout << effspd << endl;
-	cout << "==================="<<endl;
-
-	
-	jointspd = jacobian.inverse()*effspd;
-	//effspd *= RAD2DEG;
-	cout << "==================="<<endl;
-	cout << ">>>> jointspd speed" << endl;
-	cout << jointspd << endl;
-	cout << "==================="<<endl;
-*/
-
-
-	Eigen::Matrix<float, 4,4> T_, T_trans;
-	T_  = TFMatrix(q(0),D1,ALPHA1*DEG2RAD,A1);
-	T_ *= TFMatrix(q(1),D2,ALPHA2*DEG2RAD,A2);
-	T_ *= TFMatrix(q(2),D3,ALPHA3*DEG2RAD,A3);
-	T_ *= TFMatrix(q(3),D4,ALPHA4*DEG2RAD,A4);
-	T_ *= TFMatrix(q(4),D5,ALPHA5*DEG2RAD,A5);
-	T_ *= TFMatrix(q(5),D6,ALPHA6*DEG2RAD,A6);
-
-	double InverseKinematics_T[15];
-	
-
-	T_trans = T_.transpose();
-
-	cout << ">>>> T_" << endl;
-	PrintMatrix(T_);
-
-
-	cout << ">>>> InverseKinematics_T" << endl;
-	int count = 0;
-	for (int i = 0; i < 16; ++i)
-	{
-		InverseKinematics_T[i] = T_trans(i);
-		printf("%10.4f ",InverseKinematics_T[i]);
-		if (count == 3)
-		{
-			count = 0;
-			printf("\n");
-		}
-		else
-			count++;
-	}
-
-	return 0;
-}
-
-
 Eigen::Matrix<float, 6, 6> Jacobian_gen(Eigen::Matrix<float, 6,1> q)
 {
 	Eigen::Matrix<float, 6, 6> jacobian = Eigen::Matrix<float, 6, 6>::Zero();
@@ -151,27 +70,16 @@ Eigen::Matrix<float, 6, 6> Jacobian_gen(Eigen::Matrix<float, 6,1> q)
 	return jacobian;                  
 }
 
-
-Eigen::Matrix<float,4,4> TFMatrix(float th, float d, float Alpha, float a)
+void PrintMatrix_eigen(Eigen::MatrixXf InputMatrix)
 {
-	Eigen::Matrix<float,4,4> T_;
-	T_ << 	cos(th), -cos(Alpha)*sin(th),  sin(Alpha)*sin(th), a*cos(th),
-     		sin(th),  cos(Alpha)*cos(th), -sin(Alpha)*cos(th), a*sin(th),
-       			 0.,          sin(Alpha),          cos(Alpha),         d,
-       		 	 0.,                  0.,                  0.,         1.;
-    return T_;
-}
-
-void PrintMatrix(Eigen::MatrixXf InputMatrix)
-{
-	Eigen::MatrixXf Input_trans = InputMatrix.transpose();
+	Eigen::MatrixXf InputTranspose = InputMatrix.transpose();
 	short count = 0;
 	int row = InputMatrix.rows();
 	int col = InputMatrix.cols();
 
 	for (int i = 0; i < row*col; ++i)
 	{
-		printf("%10.4f ", Input_trans(i));
+		printf("%10.4f ", InputTranspose(i));
 		if (count == row-1)
 		{
 			count = 0;
@@ -180,4 +88,79 @@ void PrintMatrix(Eigen::MatrixXf InputMatrix)
 		else
 			count++;
 	}
+}
+
+void PrintMatrix_std(double *InputMatrix)
+{
+	short count = 0;
+	
+	for (int i = 0; i < 16; ++i)
+	{
+		printf("%10.4f ", InputMatrix[i]);
+		if (count == 3)
+		{
+			count = 0;
+			printf("\n");
+		}
+		else
+			count++;
+	}
+	printf("\n");
+}
+
+void Matrix2DoubleArray(Eigen::MatrixXf InputMatrix, double *T)
+{
+	Eigen::MatrixXf InputTranspose = InputMatrix.transpose();
+	short row = InputMatrix.rows();
+	short col = InputMatrix.cols();
+
+	for (int i = 0; i < row*col; ++i)
+		T[i] = InputTranspose(i);
+}
+
+
+int main(int argc, char const *argv[])
+{
+	double *q_inv, *q_forward;
+	double *T;
+	q_inv = new double[10];
+	q_forward = new double[6];
+	T = new double[16]; 
+	Eigen::Matrix<float, 6, 1> jointspd = Eigen::Matrix<float, 6, 1>::Zero();
+	Eigen::Matrix<float, 6, 1> effspd = Eigen::Matrix<float, 6, 1>::Zero();
+	Eigen::Matrix<float, 6, 1> q, q_original;
+	Eigen::Matrix<float, 6, 1> home;
+
+	home << 0, -PI*0.5, 0, PI*0.5, 0, 0;
+
+	q_original << 	strtod(argv[1],NULL),
+					strtod(argv[2],NULL),
+					strtod(argv[3],NULL),
+					strtod(argv[4],NULL),
+					strtod(argv[5],NULL),
+					strtod(argv[6],NULL);
+	q_original *= DEG2RAD;
+	q = q_original;
+	q += home;
+
+	Eigen::Matrix<float, 6, 6> jacobian = Jacobian_gen(q);
+	cout << ">>>> jacobian" << endl;
+	PrintMatrix_eigen(jacobian);
+
+	Matrix2DoubleArray(q_original, q_forward);
+	tm_kinematics::forward(q_forward, T);
+	tm_kinematics::inverse(T, q_inv);
+
+
+	cout << ">>>> forward T" << endl;
+	PrintMatrix_std(T);	
+
+	cout << ">>>> inverse q" << endl;
+	for(int i = 0; i < 6; i++)
+		printf("%10.4lf ",q_inv[i]*RAD2DEG);
+	printf("\n");
+
+
+
+	return 0;
 }
