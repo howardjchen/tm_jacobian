@@ -25,8 +25,8 @@
 #include <cmath>
 #include <math.h>
 #include <vector>
-#include "tm_kinematics/tm_kin.h"
-#include "tm_kinematics/tm_jacob.h"
+#include "tm_kinematics/include/tm_kinematics/tm_kin.h"
+#include "tm_kinematics/include/tm_kinematics/tm_jacob.h"
 #include <unistd.h>
 #include <sys/time.h>
 
