@@ -121,46 +121,56 @@ void Matrix2DoubleArray(Eigen::MatrixXf InputMatrix, double *T)
 
 int main(int argc, char const *argv[])
 {
-	double *q_inv, *q_forward;
-	double *T;
-	q_inv = new double[10];
+	double *q_inv, *q_forward, *T;
+
+	q_inv = new double[48];
 	q_forward = new double[6];
 	T = new double[16]; 
+
 	Eigen::Matrix<float, 6, 1> jointspd = Eigen::Matrix<float, 6, 1>::Zero();
 	Eigen::Matrix<float, 6, 1> effspd = Eigen::Matrix<float, 6, 1>::Zero();
-	Eigen::Matrix<float, 6, 1> q, q_original;
+	Eigen::Matrix<float, 6, 1> q_AfterHomeOffset, q_BeforeHomeOffset;
 	Eigen::Matrix<float, 6, 1> home;
 
 	home << 0, -PI*0.5, 0, PI*0.5, 0, 0;
 
-	q_original << 	strtod(argv[1],NULL),
+	q_BeforeHomeOffset << 	strtod(argv[1],NULL),
 					strtod(argv[2],NULL),
 					strtod(argv[3],NULL),
 					strtod(argv[4],NULL),
 					strtod(argv[5],NULL),
 					strtod(argv[6],NULL);
-	q_original *= DEG2RAD;
-	q = q_original;
-	q += home;
+	q_BeforeHomeOffset *= DEG2RAD;
+	q_AfterHomeOffset = q_BeforeHomeOffset + home;
 
-	Eigen::Matrix<float, 6, 6> jacobian = Jacobian_gen(q);
-	cout << ">>>> jacobian" << endl;
-	PrintMatrix_eigen(jacobian);
+	//Eigen::Matrix<float, 6, 6> jacobian = Jacobian_gen(q_AfterHomeOffset);
+	//cout << ">>>> jacobian" << endl;
+	//PrintMatrix_eigen(jacobian);
 
-	Matrix2DoubleArray(q_original, q_forward);
+
+	Matrix2DoubleArray(q_BeforeHomeOffset, q_forward);
+	cout << ">>>> Input q : " << endl;
+	for (int i = 0; i < 6; ++i)
+	{
+		printf("%10.4lf ",q_forward[i]*RAD2DEG );
+	}
+	printf("\n");
+
 	tm_kinematics::forward(q_forward, T);
-	tm_kinematics::inverse(T, q_inv);
+
+	int num_sol = tm_kinematics::inverse(T, q_inv, q_forward);
 
 
 	cout << ">>>> forward T" << endl;
 	PrintMatrix_std(T);	
 
-	cout << ">>>> inverse q" << endl;
-	for(int i = 0; i < 6; i++)
-		printf("%10.4lf ",q_inv[i]*RAD2DEG);
-	printf("\n");
-
-
+	cout << ">>>> inverse q number of sols : " << num_sol << endl;
+	for (int j = 0; j < num_sol; ++j)
+	{
+		for(int i = 0; i < 6; i++)
+			printf("%10.4lf ",q_inv[ i + j*6 ]*RAD2DEG);
+		printf("\n");
+	}
 
 	return 0;
 }
