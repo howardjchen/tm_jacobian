@@ -27,7 +27,7 @@
  *  Created on: June 13, 2017
  *      Author: Howard Chen
  */
-#include "tm_kinematics/tm_jacob.h"
+#include "tm_kinematics/tm_kin.h"
 
 
 namespace tm_jacobian {
