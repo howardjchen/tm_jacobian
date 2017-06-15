@@ -27,42 +27,8 @@
  *  Created on: June 13, 2017
  *      Author: Howard Chen
  */
-#include <iostream>
-#include <stdio.h>
-#include <stdlib.h>
-#include <cmath>
-#include <math.h>
-#include <vector>
-
-#include <Eigen/Dense>
-
 #include "tm_kinematics/tm_jacob.h"
 
-#define D1 0.1451
-#define D2 0
-#define D3 0
-#define D4 -0.1222
-#define D5 0.106
-#define D6 0.1144
-
-#define A1 0
-#define A2 0.329
-#define A3 0.3115
-#define A4 0
-#define A5 0
-#define A6 0
-
-
-#define ALPHA1 -90
-#define ALPHA2 0
-#define ALPHA3 0 
-#define ALPHA4 90
-#define ALPHA5 90
-#define ALPHA6 0
-
-#define PI 3.141592654
-#define DEG2RAD 0.01745329252
-#define RAD2DEG 57.29577951
 
 namespace tm_jacobian {
 
