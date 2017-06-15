@@ -57,7 +57,7 @@ namespace tm_jacobian {
 	}
 
 
-	void PrintMatrix_Eigen(Eigen::MatrixXf InputMatrix)
+	void printMatrix(Eigen::MatrixXf InputMatrix)
 	{
 		Eigen::MatrixXf InputTranspose = InputMatrix.transpose();
 		short count = 0;
@@ -77,14 +77,16 @@ namespace tm_jacobian {
 		}
 	}
 
-	void PrintMatrix_Std(double *InputMatrix)
+	void printMatrix(double *InputMatrix, short col, int num)
 	{
 		short count = 0;
+		if(num == 0)
+			num = 1*col;
 		
-		for (int i = 0; i < 16; ++i)
+		for (int i = 0; i < num; ++i)
 		{
 			printf("%10.4f ", InputMatrix[i]);
-			if (count == 3)
+			if (count == col-1)
 			{
 				count = 0;
 				printf("\n");

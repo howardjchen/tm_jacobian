@@ -63,9 +63,9 @@ namespace tm_jacobian {
 	
 	Eigen::Matrix<float, 6, 6> Inverse_Jacobian(Eigen::Matrix<float, 6,1> q);
 	
-	void PrintMatrix_Eigen(Eigen::MatrixXf InputMatrix);
+	void printMatrix(Eigen::MatrixXf InputMatrix);
 	
-	void PrintMatrix_Std(double *InputMatrix);
+	void printMatrix(double *InputMatrix, short, int);
 	
 	void Matrix2DoubleArray(Eigen::MatrixXf InputMatrix, double *T);
 }

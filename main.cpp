@@ -85,7 +85,7 @@ int main(int argc, char const *argv[])
 
 	Eigen::Matrix<float, 6, 6> jacobian = tm_jacobian::Forward_Jacobian(q_AfterHomeOffset);
 	cout << ">>>> jacobian" << endl;
-	tm_jacobian::PrintMatrix_Eigen(jacobian);
+	tm_jacobian::printMatrix(jacobian);
 
 
 	tm_jacobian::Matrix2DoubleArray(q_BeforeHomeOffset, q_forward);
@@ -102,17 +102,10 @@ int main(int argc, char const *argv[])
 
 
 	cout << ">>>> forward T" << endl;
-	tm_jacobian::PrintMatrix_Std(T);	
+	tm_jacobian::printMatrix(T,4,16);	
 
 	cout << ">>>> inverse q number of sols : " << num_sol << endl;
-	for (int j = 0; j < num_sol; ++j)
-	{
-		for(int i = 0; i < 6; i++)
-			printf("%10.4lf ",q_inv[ i + j*6 ]*RAD2DEG);
-		printf("\n");
-	}
-
-
+	tm_jacobian::printMatrix(q_inv, 6, 6*(num_sol));
 
 	return 0;
 }
