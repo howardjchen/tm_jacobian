@@ -58,6 +58,24 @@
 
 using namespace std;
 
+void help()
+{
+    printf("\n");
+	printf("* PLease enter the argument in the following format : \n");
+	printf("* option : IJ = inverse jacobian\n");
+	printf("*          IK = inverse kinematics\n");
+	printf("*          FJ = forward jacobian\n");
+	printf("*          FK = forward kinematics\n");
+	printf("* IJ: ./tm_jacobian IJ q1 q2 q3 q4 q5 q6 x' y' z' a' b' c' \n");
+	printf("* IK: ./tm_jacobian IK x y z a b c\n");
+	printf("* FJ: ./tm_jacobian FJ q1 q2 q3 q4 q5 q6 qd1 qd2 qd3 qd4 qd5 qd6 \n");
+	printf("* FK: ./tm_jacobian FK q1 q2 q3 q4 q5 q6 \n");
+	printf("* Input  dim: joint(degree), cartesian(m)\n");
+	printf("* Output dim: joint(radius), cartesian(m)\n");
+	printf("\n");
+}
+
+
 int main(int argc, char const *argv[])
 {
 	double *q_inv, *q_forward, *T;
@@ -71,40 +89,74 @@ int main(int argc, char const *argv[])
 	Eigen::Matrix<float, 6, 1> q_AfterHomeOffset, q_BeforeHomeOffset;
 	Eigen::Matrix<float, 6, 1> home;
 
+
 	home << 0, -PI*0.5, 0, PI*0.5, 0, 0;
 
-	q_BeforeHomeOffset << 	strtod(argv[1],NULL),
-							strtod(argv[2],NULL),
-							strtod(argv[3],NULL),
-							strtod(argv[4],NULL),
-							strtod(argv[5],NULL),
-							strtod(argv[6],NULL);
-	q_BeforeHomeOffset *= DEG2RAD;
-	q_AfterHomeOffset = q_BeforeHomeOffset + home;
-
-	Eigen::Matrix<float, 6, 6> jacobian = tm_jacobian::Forward_Jacobian(q_AfterHomeOffset);
-	cout << ">>>> jacobian" << endl;
-	tm_jacobian::printMatrix(jacobian);
-
-
-	tm_jacobian::Matrix2DoubleArray(q_BeforeHomeOffset, q_forward);
-	cout << ">>>> Input q : " << endl;
-	for (int i = 0; i < 6; ++i)
+	if(strncmp(argv[1],"--help",6) == 0)
 	{
-		printf("%10.4lf ",q_forward[i]*RAD2DEG );
+		help();
+		return 0;
 	}
-	printf("\n");
-
-	tm_kinematics::forward(q_forward, T);
-
-	int num_sol = tm_kinematics::inverse(T, q_inv, q_forward);
 
 
-	cout << ">>>> forward T" << endl;
-	tm_jacobian::printMatrix(T,4,16);	
+	q_BeforeHomeOffset << 	strtod(argv[2],NULL)*DEG2RAD,
+							strtod(argv[3],NULL)*DEG2RAD,
+							strtod(argv[4],NULL)*DEG2RAD,
+							strtod(argv[5],NULL)*DEG2RAD,
+							strtod(argv[6],NULL)*DEG2RAD,
+							strtod(argv[7],NULL)*DEG2RAD;
 
-	cout << ">>>> inverse q number of sols : " << num_sol << endl;
-	tm_jacobian::printMatrix(q_inv, 6, 6*(num_sol));
+	q_AfterHomeOffset = q_BeforeHomeOffset + home;
+	
+
+	if(strncmp(argv[1],"IJ",2) == 0) // inverse jacobian 
+	{
+		effspd << 			strtod(argv[8],NULL),
+							strtod(argv[9],NULL),
+							strtod(argv[10],NULL),
+							strtod(argv[11],NULL),
+							strtod(argv[12],NULL),
+							strtod(argv[13],NULL);
+
+		Eigen::Matrix<float, 6, 6> Inverse_Jacobian = tm_jacobian::Inverse_Jacobian(q_AfterHomeOffset);
+		jointspd = Inverse_Jacobian*effspd;
+		cout << ">>>> Inverse jacobian" << endl;
+		tm_jacobian::printMatrix(Inverse_Jacobian);
+
+		cout << ">>>> joint speed" << endl;
+		tm_jacobian::printMatrix(jointspd);
+	}
+	else if(strncmp(argv[1],"IK",2) == 0)    // inverse kinematics 
+	{
+
+	}
+	else if(strncmp(argv[1],"FJ",2) == 0)    // forward jacobian 
+	{
+		jointspd << 		strtod(argv[8],NULL),
+							strtod(argv[9],NULL),
+							strtod(argv[10],NULL),
+							strtod(argv[11],NULL),
+							strtod(argv[12],NULL),
+							strtod(argv[13],NULL);
+
+		Eigen::Matrix<float, 6, 6> Jacobian = tm_jacobian::Forward_Jacobian(q_AfterHomeOffset);
+		effspd = Jacobian*jointspd;
+		cout << ">>>> jacobian" << endl;
+		tm_jacobian::printMatrix(Jacobian);
+
+		cout << ">>>> effspd speed" << endl;
+		tm_jacobian::printMatrix(effspd);
+	}
+	else if(strncmp(argv[1],"FK",2) == 0)    // forward kinematics 
+	{
+		tm_jacobian::Matrix2DoubleArray(q_BeforeHomeOffset, q_forward);
+		tm_kinematics::forward(q_forward, T);
+		int num_sol = tm_kinematics::inverse(T, q_inv, q_forward);
+		cout << ">>>> forward T" << endl;
+		tm_jacobian::printMatrix(T,4,16);	
+		cout << ">>>> inverse q number of sols : " << num_sol << endl;
+		tm_jacobian::printMatrix(q_inv, 6, 6*(num_sol));
+	}
 
 	return 0;
 }
