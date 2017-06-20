@@ -97,8 +97,12 @@ namespace tm_jacobian {
 	void printMatrix(Eigen::MatrixXf InputMatrix);
 	
 	void printMatrix(double *InputMatrix, short, int);
+
+	void printVector(std::vector<double> vec);
 	
 	void Matrix2DoubleArray(Eigen::MatrixXf InputMatrix, double *T);
+
+	void Matrix2DoubleVector(Eigen::MatrixXf InputMatrix, std::vector<double> &vec);
 }
 
 #endif //TM_KIN_H

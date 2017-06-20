@@ -97,6 +97,16 @@ namespace tm_jacobian {
 		printf("\n");
 	}
 
+	void printVector(std::vector<double> vec)
+	{
+		for (int i = 0; i < vec.size(); ++i)
+		{
+			printf("%10.4f ", vec[i]);
+
+		}
+		printf("\n");
+	}
+
 	void Matrix2DoubleArray(Eigen::MatrixXf InputMatrix, double *T)
 	{
 		Eigen::MatrixXf InputTranspose = InputMatrix.transpose();
@@ -105,6 +115,16 @@ namespace tm_jacobian {
 
 		for (int i = 0; i < row*col; ++i)
 			T[i] = InputTranspose(i);
+	}
+
+	void Matrix2DoubleVector(Eigen::MatrixXf InputMatrix, std::vector<double> &vec)
+	{
+		Eigen::MatrixXf InputTranspose = InputMatrix.transpose();
+		short row = InputMatrix.rows();
+		short col = InputMatrix.cols();
+
+		for (int i = 0; i < row*col; ++i)
+			vec[i] = InputTranspose(i);
 	}
 
 }
