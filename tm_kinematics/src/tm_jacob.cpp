@@ -77,6 +77,17 @@ namespace tm_jacobian {
 		}
 	}
 
+	void printVector(Eigen::VectorXd InputVector)
+	{
+		Eigen::VectorXd InputTranspose = InputVector.transpose();
+		int row = InputVector.rows();
+		int col = InputVector.cols();
+
+		for (int i = 0; i < row*col; ++i)
+			printf("%10.4f ", InputTranspose(i));
+		printf("\n");
+	}
+
 	void printMatrix(double *InputMatrix, short col, int num)
 	{
 		short count = 0;

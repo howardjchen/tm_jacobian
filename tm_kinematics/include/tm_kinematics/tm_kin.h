@@ -98,6 +98,8 @@ namespace tm_jacobian {
 	
 	void printMatrix(double *InputMatrix, short, int);
 
+	void printVector(Eigen::VectorXd InputVector);
+
 	void printVector(std::vector<double> vec);
 	
 	void Matrix2DoubleArray(Eigen::MatrixXf InputMatrix, double *T);
