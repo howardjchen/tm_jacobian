@@ -70,7 +70,7 @@ void help()
 	printf("* IK: ./tm_jacobian IK x y z a b c\n");
 	printf("* FJ: ./tm_jacobian FJ q1 q2 q3 q4 q5 q6 qd1 qd2 qd3 qd4 qd5 qd6 \n");
 	printf("* FK: ./tm_jacobian FK q1 q2 q3 q4 q5 q6 \n");
-	printf("* Input  dim: joint(degree), cartesian(m)\n");
+	printf("* Input  dim: joint(radius), cartesian(m)\n");
 	printf("* Output dim: joint(radius), cartesian(m)\n");
 	printf("\n");
 }
@@ -99,12 +99,12 @@ int main(int argc, char const *argv[])
 	}
 
 
-	q_BeforeHomeOffset << 	strtod(argv[2],NULL)*DEG2RAD,
-							strtod(argv[3],NULL)*DEG2RAD,
-							strtod(argv[4],NULL)*DEG2RAD,
-							strtod(argv[5],NULL)*DEG2RAD,
-							strtod(argv[6],NULL)*DEG2RAD,
-							strtod(argv[7],NULL)*DEG2RAD;
+	q_BeforeHomeOffset << 	strtod(argv[2],NULL),
+							strtod(argv[3],NULL),
+							strtod(argv[4],NULL),
+							strtod(argv[5],NULL),
+							strtod(argv[6],NULL),
+							strtod(argv[7],NULL);
 
 	q_AfterHomeOffset = q_BeforeHomeOffset + home;
 	
@@ -128,6 +128,34 @@ int main(int argc, char const *argv[])
 	}
 	else if(strncmp(argv[1],"IK",2) == 0)    // inverse kinematics 
 	{
+		Eigen::Matrix<float, 6, 1>CartesianPosition = q_BeforeHomeOffset;
+
+		Eigen::Matrix<float,4,4> T_;
+	    Eigen::AngleAxisf rollAngle (CartesianPosition(3)*DEG2RAD, Eigen::Vector3f::UnitZ());
+	    Eigen::AngleAxisf yawAngle  (CartesianPosition(4)*DEG2RAD, Eigen::Vector3f::UnitY());
+	    Eigen::AngleAxisf pitchAngle(CartesianPosition(5)*DEG2RAD, Eigen::Vector3f::UnitX());
+	    Eigen::Quaternion<float> quaternion_matrix = rollAngle * yawAngle * pitchAngle;
+	    Eigen::Matrix<float,3,3> RotationMatrix = quaternion_matrix.matrix();
+	    
+	    T_ <<   0., 0., 0., CartesianPosition(0),
+	            0., 0., 0., CartesianPosition(1),
+	            0., 0., 0., CartesianPosition(2),
+	            0., 0., 0., 1.;
+
+	    for (int i = 0; i < 3; ++i)
+	    {
+	        for (int j = 0; j < 3; ++j)
+	        {
+	            T_(i,j) = RotationMatrix(i,j);
+	        }
+	    }
+
+	    tm_jacobian::Matrix2DoubleArray(T_,T);
+	    cout << ">>>> T " << endl;
+	    tm_jacobian::printMatrix(T,4,16);
+	    int num_sol =  tm_kinematics::inverse(T, q_inv);
+	    cout << ">>>> inverse q number of sols : " << num_sol << endl;
+		tm_jacobian::printMatrix(q_inv, 6, 6*(num_sol));
 
 	}
 	else if(strncmp(argv[1],"FJ",2) == 0)    // forward jacobian 
@@ -158,5 +186,8 @@ int main(int argc, char const *argv[])
 		tm_jacobian::printMatrix(q_inv, 6, 6*(num_sol));
 	}
 
+	delete [] T;
+	delete [] q_inv;
+	delete [] q_forward;
 	return 0;
 }
