@@ -56,6 +56,55 @@ namespace tm_jacobian {
 		return jacobian.inverse();                  
 	}
 
+	void Forward_Kinematics_3(const double* q, double* T) 
+	{
+		const double _PI = M_PI;
+		const double _PI_2 = 0.5 * M_PI;
+		const double _2_PI = 2.0 * M_PI;
+		double c1, c2, s1, s2;
+		
+		c1 = cos(q[0]); 
+		s1 = sin(q[0]);
+		c2 = cos(q[1] - _PI_2); 
+		s2 = sin(q[1] - _PI_2);
+
+		T[0] = c1*c2;    T[1]  = -c1*s2;    T[2]  = -s1;    T[3]  = A2*c1*c2;
+
+		T[4] = c2*s1;    T[5]  = -s1*s2;    T[6]  =  c1;    T[7]  = A2*c2*s1;
+
+		T[8] = -s2;		 T[9]  = -c2;       T[10] =   0;    T[11] = D1 - A2*s2; 
+
+		T[12] = 0;		 T[13] = 0;		    T[14] =   0;    T[15] = 1;
+	}
+
+	void Forward_Kinematics_4(const double* q, double* T) 
+	{
+		const double _PI = M_PI;
+		const double _PI_2 = 0.5 * M_PI;
+		const double _2_PI = 2.0 * M_PI;
+		double c1, c2, c3, c4, c5, c6, s1, s2, s3;
+		double cp, sp;
+		
+		c1 = cos(q[0]); s1 = sin(q[0]);
+		c2 = cos(q[1] - _PI_2); s2 = sin(q[1] - _PI_2);
+		c3 = cos(q[2]); s3 = sin(q[2]);
+
+		T[0] = c1*c2*c3 - c1*s2*s3;	T[1]  = -c1*c2*s3 - c1*c3*s2;	T[2]  = -s1;
+
+		T[3] = A2*c1*c2 + A3*c1*c2*c3 - A3*c1*s2*s3;
+
+		T[4]  = c2*c3*s1 - s1*s2*s3;	T[5]  = -c2*s1*s3 - c3*s1*s2;	T[6]  = c1;
+
+		T[7]  = A2*c2*s1 + A3*c2*c3*s1 - A3*s1*s2*s3;
+
+		T[8]  = -c2*s3 - c3*s2;		T[9]  = s2*s3 - c2*c3;		T[10] = 0;
+
+		T[11] = D1 - A2*s2 - A3*c2*s3 - A3*c3*s2;
+
+		T[12] = 0;		T[13] = 0;		T[14] = 0;
+
+		T[15] = 1;
+	}
 
 	void printMatrix(Eigen::MatrixXf InputMatrix)
 	{
