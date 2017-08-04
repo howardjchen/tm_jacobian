@@ -108,7 +108,6 @@ namespace tm_jacobian {
 
 	void printMatrix(Eigen::MatrixXf InputMatrix)
 	{
-		Eigen::MatrixXf InputTranspose = InputMatrix.transpose();
 		short count = 0;
 		int row = InputMatrix.rows();
 		int col = InputMatrix.cols();
@@ -118,6 +117,22 @@ namespace tm_jacobian {
 			for (int j = 0; j < col; ++j)
 			{
 				printf("%10.4f ", InputMatrix(i,j));
+			}
+			printf("\n");
+		}
+	}
+
+	void printMatrixd(Eigen::MatrixXd InputMatrix)
+	{
+		short count = 0;
+		int row = InputMatrix.rows();
+		int col = InputMatrix.cols();
+
+		for (int i = 0; i < row; ++i)
+		{
+			for (int j = 0; j < col; ++j)
+			{
+				printf("%10.4lf ", InputMatrix(i,j));
 			}
 			printf("\n");
 		}
@@ -177,6 +192,16 @@ namespace tm_jacobian {
 	void Matrix2DoubleVector(Eigen::MatrixXf InputMatrix, std::vector<double> &vec)
 	{
 		Eigen::MatrixXf InputTranspose = InputMatrix.transpose();
+		short row = InputMatrix.rows();
+		short col = InputMatrix.cols();
+
+		for (int i = 0; i < row*col; ++i)
+			vec[i] = InputTranspose(i);
+	}
+
+	void Matrix2DoubleVector_d(Eigen::MatrixXd InputMatrix, std::vector<double> &vec)
+	{
+		Eigen::MatrixXd InputTranspose = InputMatrix.transpose();
 		short row = InputMatrix.rows();
 		short col = InputMatrix.cols();
 
