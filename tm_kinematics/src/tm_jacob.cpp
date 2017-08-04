@@ -113,16 +113,13 @@ namespace tm_jacobian {
 		int row = InputMatrix.rows();
 		int col = InputMatrix.cols();
 
-		for (int i = 0; i < row*col; ++i)
+		for (int i = 0; i < row; ++i)
 		{
-			printf("%10.4f ", InputTranspose(i));
-			if (count == row-1)
+			for (int j = 0; j < col; ++j)
 			{
-				count = 0;
-				printf("\n");
+				printf("%10.4f ", InputMatrix(i,j));
 			}
-			else
-				count++;
+			printf("\n");
 		}
 	}
 
