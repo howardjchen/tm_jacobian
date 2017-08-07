@@ -91,6 +91,17 @@ int main(int argc, char const *argv[])
 
 
 	home << 0, -PI*0.5, 0, PI*0.5, 0, 0;
+/*
+	double *q_test = new double [2];
+	q_test[0] = 45*DEG2RAD;
+	q_test[1] = 45*DEG2RAD;
+
+	tm_jacobian::Forward_Kinematics_3(q_test, T);
+	cout << ">>>> forward T" << endl;
+	tm_jacobian::printMatrix(T,4,16);
+
+	delete [] q_test;	
+*/
 
 	if(strncmp(argv[1],"--help",6) == 0)
 	{
@@ -131,9 +142,9 @@ int main(int argc, char const *argv[])
 		Eigen::Matrix<float, 6, 1>CartesianPosition = q_BeforeHomeOffset;
 
 		Eigen::Matrix<float,4,4> T_;
-	    Eigen::AngleAxisf rollAngle (CartesianPosition(3)*DEG2RAD, Eigen::Vector3f::UnitZ());
-	    Eigen::AngleAxisf yawAngle  (CartesianPosition(4)*DEG2RAD, Eigen::Vector3f::UnitY());
-	    Eigen::AngleAxisf pitchAngle(CartesianPosition(5)*DEG2RAD, Eigen::Vector3f::UnitX());
+	    Eigen::AngleAxisf rollAngle (CartesianPosition(3), Eigen::Vector3f::UnitZ());
+	    Eigen::AngleAxisf yawAngle  (CartesianPosition(4), Eigen::Vector3f::UnitY());
+	    Eigen::AngleAxisf pitchAngle(CartesianPosition(5), Eigen::Vector3f::UnitX());
 	    Eigen::Quaternion<float> quaternion_matrix = rollAngle * yawAngle * pitchAngle;
 	    Eigen::Matrix<float,3,3> RotationMatrix = quaternion_matrix.matrix();
 	    
@@ -184,6 +195,20 @@ int main(int argc, char const *argv[])
 		tm_jacobian::printMatrix(T,4,16);	
 		cout << ">>>> inverse q number of sols : " << num_sol << endl;
 		tm_jacobian::printMatrix(q_inv, 6, 6*(num_sol));
+	}
+	else if(strncmp(argv[1],"TT",2) == 0)
+	{
+		double *q_test = new double [3];
+		q_test[0] = 0;
+		q_test[1] = 0;
+		q_test[2] = 0;
+
+		tm_jacobian::Forward_Kinematics_3(q_test, T);
+		cout << ">>>> forward T" << endl;
+		tm_jacobian::printMatrix(T,4,16);
+		
+		delete [] q_test;
+
 	}
 
 	delete [] T;
