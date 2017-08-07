@@ -44,6 +44,15 @@ namespace tm_jacobian {
 		return jacobian;                  
 	}
 
+	Eigen::Matrix<double, 3, 2> Forward_Linear_Jacobian_3(Eigen::Matrix<float, 6,1> q)
+	{
+		Eigen::Matrix<double, 3, 2> jacobian = Eigen::Matrix<double, 3, 2>::Zero();
+		jacobian <<  -A2*cos(q(1))*sin(q(0)), -A2*cos(q(0))*sin(q(1)),
+					  A2*cos(q(0))*cos(q(1)), -A2*sin(q(0))*sin(q(1)),
+					                      0.,           -A2*cos(q(1));
+		return jacobian;                  
+	}
+
 	Eigen::Matrix<float, 6, 6> Inverse_Jacobian(Eigen::Matrix<float, 6,1> q)
 	{
 		Eigen::Matrix<float, 6, 6> jacobian = Eigen::Matrix<float, 6, 6>::Zero();
@@ -157,7 +166,7 @@ namespace tm_jacobian {
 		
 		for (int i = 0; i < num; ++i)
 		{
-			printf("%10.4f ", InputMatrix[i]);
+			printf("%10.4f, ", InputMatrix[i]);
 			if (count == col-1)
 			{
 				count = 0;

@@ -91,6 +91,8 @@ namespace tm_kinematics {
 namespace tm_jacobian {
 
   	Eigen::Matrix<float, 6, 6> Forward_Jacobian(Eigen::Matrix<float, 6,1> q);
+
+  	Eigen::Matrix<double, 3, 2> Forward_Linear_Jacobian_3(Eigen::Matrix<float, 6,1> q);
 	
 	Eigen::Matrix<float, 6, 6> Inverse_Jacobian(Eigen::Matrix<float, 6,1> q);
 
