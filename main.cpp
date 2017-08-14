@@ -142,37 +142,44 @@ int main(int argc, char const *argv[])
 	else if(strncmp(argv[1],"IK",2) == 0)    // inverse kinematics 
 	{
 		Eigen::Matrix<float, 6, 1>CartesianPosition = q_BeforeHomeOffset;
-
-		Eigen::Matrix<float,4,4> T_;
+		Eigen::Matrix<float, 4, 4> T_;
 	    Eigen::AngleAxisf rollAngle (CartesianPosition(3), Eigen::Vector3f::UnitZ());
 	    Eigen::AngleAxisf yawAngle  (CartesianPosition(4), Eigen::Vector3f::UnitY());
 	    Eigen::AngleAxisf pitchAngle(CartesianPosition(5), Eigen::Vector3f::UnitX());
 	    Eigen::Quaternion<float> quaternion_matrix = rollAngle * yawAngle * pitchAngle;
-	    Eigen::Matrix<float,3,3> RotationMatrix = quaternion_matrix.matrix();
+	    Eigen::Matrix<float,3,3> RotationMatrix    = quaternion_matrix.matrix();
+	    int num_sol;
 	    
 	    T_ <<   0., 0., 0., CartesianPosition(0),
 	            0., 0., 0., CartesianPosition(1),
 	            0., 0., 0., CartesianPosition(2),
 	            0., 0., 0., 1.;
 	    T_.block<3,3>(0,0) = RotationMatrix.block<3,3>(0,0);
-	   	cout << ">>>> T07 " << endl;
-	    tm_jacobian::printMatrix(T_);
 
-	    Eigen::Matrix<float,4,4> T67, T06;
-		T67 <<  1, 0, 0, 0,
-				0, 1, 0, 0,
-				0, 0, 1, 0.235,
-				0, 0, 0, 1;
+	    if(strncmp(argv[1],"IKG",3) == 0)
+	    {
+		    Eigen::Matrix<float,4,4> T67, T06;
+			T67 <<  1, 0, 0, 0,
+					0, 1, 0, 0,
+					0, 0, 1, 0.235,
+					0, 0, 0, 1;
 
-		T06 = T_*T67.inverse();
-
-	    tm_jacobian::Matrix2DoubleArray(T06,T);
+			T06 = T_*T67.inverse();
+		    tm_jacobian::Matrix2DoubleArray(T06,T);
+		   	num_sol =  tm_kinematics::inverse(T, q_inv);
+		   	cout << ">>>> T07 " << endl;
+	    	tm_jacobian::printMatrix(T_);
+		}
+		else
+		{
+			tm_jacobian::Matrix2DoubleArray(T_,T);
+			num_sol =  tm_kinematics::inverse(T, q_inv);
+		}
+	   	
 	    cout << ">>>> T06 " << endl;
 	    tm_jacobian::printMatrix(T,4,16);
-	    int num_sol =  tm_kinematics::inverse(T, q_inv);
-	    cout << ">>>> inverse q number of sols : " << num_sol << endl;
+	    cout << ">>>> inverse q number of sols T06 : " << num_sol << endl;
 		tm_jacobian::printMatrix(q_inv, 6, 6*(num_sol));
-
 	}
 	else if(strncmp(argv[1],"FJ",2) == 0)    // forward jacobian 
 	{
