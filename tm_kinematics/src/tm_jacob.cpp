@@ -115,6 +115,39 @@ namespace tm_jacobian {
 		T[15] = 1;
 	}
 
+	void Forward_Kinematics_gripper(const double* q, double* T, double Length) 
+	{
+		const double _PI = M_PI;
+		const double _PI_2 = 0.5 * M_PI;
+		const double _2_PI = 2.0 * M_PI;
+		double c1, c2, c3, c4, c5, c6, s1, s2, s3, s4, s5, s6;
+		double cp, sp;
+		c1 = cos(q[0]); s1 = sin(q[0]);
+		c2 = cos(q[1] - _PI_2); s2 = sin(q[1] - _PI_2);
+		c3 = cos(q[2]); s3 = sin(q[2]);
+		c4 = cos(q[3] + _PI_2); s4 = sin(q[3] + _PI_2);
+		c5 = cos(q[4]); s5 = sin(q[4]);
+		c6 = cos(q[5]); s6 = sin(q[5]);
+		cp = cos(q[1] + q[2] + q[3]);
+		sp = sin(q[1] + q[2] + q[3]);
+
+		T[0]  = c1*sp*s6 - s1*s5*c6 + c1*cp*c5*c6;	T[1]  = c1*sp*c6 + s1*s5*s6 - c1*cp*c5*s6;	T[2]  = c1*cp*s5 + s1*c5;
+
+		T[3]  = D5*(c4*(c1*c2*s3 + c1*c3*s2) + s4*(c1*c2*c3 - c1*s2*s3)) - D4*s1 + D6*(c5*s1 + s5*(c4*(c1*c2*c3 - c1*s2*s3) - s4*(c1*c2*s3 + c1*c3*s2))) + Length*(c5*s1 + s5*(c4*(c1*c2*c3 - c1*s2*s3) - s4*(c1*c2*s3 + c1*c3*s2))) + A2*c1*c2 + A3*c1*c2*c3 - A3*c1*s2*s3;
+
+		T[4]  = s1*sp*s6 + c1*s5*c6 + s1*cp*c5*c6;	T[5]  = s1*sp*c6 - c1*s5*s6 - s1*cp*c5*s6;	T[6]  = s1*cp*s5 - c1*c5;
+
+		T[7]  = D5*(c4*(c2*s1*s3 + c3*s1*s2) - s4*(s1*s2*s3 - c2*c3*s1)) + D4*c1 - D6*(c1*c5 + s5*(c4*(s1*s2*s3 - c2*c3*s1) + s4*(c2*s1*s3 + c3*s1*s2))) - Length*(c1*c5 + s5*(c4*(s1*s2*s3 - c2*c3*s1) + s4*(c2*s1*s3 + c3*s1*s2))) + A2*c2*s1 + A3*c2*c3*s1 - A3*s1*s2*s3;
+
+		T[8]  = cp*s6 - sp*c5*c6;		T[9]  = cp*c6 + sp*c5*s6;		T[10] = -sp*s5;
+
+		T[11] = D1 - A2*s2 + D5*(c4*(c2*c3 - s2*s3) - s4*(c2*s3 + c3*s2)) - A3*c2*s3 - A3*c3*s2 - D6*s5*(c4*(c2*s3 + c3*s2) + s4*(c2*c3 - s2*s3)) - Length*s5*(c4*(c2*s3 + c3*s2) + s4*(c2*c3 - s2*s3));
+
+		T[12] = 0;		T[13] = 0;		T[14] = 0;
+
+		T[15] = 1;
+	}
+
 	void printMatrix(Eigen::MatrixXf InputMatrix)
 	{
 		short count = 0;

@@ -99,6 +99,8 @@ namespace tm_jacobian {
 	void Forward_Kinematics_3(const double* q, double* T);
 
 	void Forward_Kinematics_4(const double* q, double* T);
+
+	void Forward_Kinematics_gripper(const double* q, double* T, double Length=0.235); 
 	
 	void printMatrix(Eigen::MatrixXf InputMatrix);
 	
