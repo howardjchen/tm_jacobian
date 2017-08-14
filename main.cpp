@@ -19,7 +19,7 @@
  **********************************************************************/
 
 #include <iostream>
-#include <Eigen/Dense>
+#include <eigen3/Eigen/Dense>
 #include <stdio.h>
 #include <stdlib.h>
 #include <cmath>
@@ -66,6 +66,8 @@ void help()
 	printf("*          IK = inverse kinematics\n");
 	printf("*          FJ = forward jacobian\n");
 	printf("*          FK = forward kinematics\n");
+	printf("*          FJG = forward jacobian with gripper\n");
+	printf("*          FKG = forward kinematics with gripper\n");
 	printf("* IJ: ./tm_jacobian IJ q1 q2 q3 q4 q5 q6 x' y' z' a' b' c' \n");
 	printf("* IK: ./tm_jacobian IK x y z a b c\n");
 	printf("* FJ: ./tm_jacobian FJ q1 q2 q3 q4 q5 q6 qd1 qd2 qd3 qd4 qd5 qd6 \n");
@@ -152,17 +154,20 @@ int main(int argc, char const *argv[])
 	            0., 0., 0., CartesianPosition(1),
 	            0., 0., 0., CartesianPosition(2),
 	            0., 0., 0., 1.;
+	    T_.block<3,3>(0,0) = RotationMatrix.block<3,3>(0,0);
+	   	cout << ">>>> T07 " << endl;
+	    tm_jacobian::printMatrix(T_);
 
-	    for (int i = 0; i < 3; ++i)
-	    {
-	        for (int j = 0; j < 3; ++j)
-	        {
-	            T_(i,j) = RotationMatrix(i,j);
-	        }
-	    }
+	    Eigen::Matrix<float,4,4> T67, T06;
+		T67 <<  1, 0, 0, 0,
+				0, 1, 0, 0,
+				0, 0, 1, 0.235,
+				0, 0, 0, 1;
 
-	    tm_jacobian::Matrix2DoubleArray(T_,T);
-	    cout << ">>>> T " << endl;
+		T06 = T_*T67.inverse();
+
+	    tm_jacobian::Matrix2DoubleArray(T06,T);
+	    cout << ">>>> T06 " << endl;
 	    tm_jacobian::printMatrix(T,4,16);
 	    int num_sol =  tm_kinematics::inverse(T, q_inv);
 	    cout << ">>>> inverse q number of sols : " << num_sol << endl;
@@ -171,30 +176,85 @@ int main(int argc, char const *argv[])
 	}
 	else if(strncmp(argv[1],"FJ",2) == 0)    // forward jacobian 
 	{
-		jointspd << 		strtod(argv[8],NULL),
-							strtod(argv[9],NULL),
-							strtod(argv[10],NULL),
-							strtod(argv[11],NULL),
-							strtod(argv[12],NULL),
-							strtod(argv[13],NULL);
+		if(strncmp(argv[1],"FJG",3) == 0)
+		{
+			Eigen::Matrix<double, 6, 1> JointVelocity    = Eigen::Matrix<double, 6, 1>::Zero();
+			Eigen::Matrix<double, 6, 1> EFFVelocity      = Eigen::Matrix<double, 6, 1>::Zero();
+			Eigen::Matrix<double, 6, 6> Jacobian_gripper = tm_jacobian::Forward_Jacobian_gripper(q_AfterHomeOffset);
+			JointVelocity << 	strtod(argv[8],NULL),
+								strtod(argv[9],NULL),
+								strtod(argv[10],NULL),
+								strtod(argv[11],NULL),
+								strtod(argv[12],NULL),
+								strtod(argv[13],NULL);
+			EFFVelocity = Jacobian_gripper*JointVelocity;
 
-		Eigen::Matrix<float, 6, 6> Jacobian = tm_jacobian::Forward_Jacobian(q_AfterHomeOffset);
-		effspd = Jacobian*jointspd;
-		cout << ">>>> jacobian" << endl;
-		tm_jacobian::printMatrix(Jacobian);
+			cout << ">>>> jacobian" << endl;
+			tm_jacobian::printMatrixd(Jacobian_gripper);
+			cout << ">>>> effspd speed" << endl;
+			tm_jacobian::printMatrixd(EFFVelocity);
+		}
+		else
+		{
+			jointspd << 		strtod(argv[8],NULL),
+								strtod(argv[9],NULL),
+								strtod(argv[10],NULL),
+								strtod(argv[11],NULL),
+								strtod(argv[12],NULL),
+								strtod(argv[13],NULL);
 
-		cout << ">>>> effspd speed" << endl;
-		tm_jacobian::printMatrix(effspd);
+			Eigen::Matrix<float, 6, 6> Jacobian = tm_jacobian::Forward_Jacobian(q_AfterHomeOffset);
+			effspd = Jacobian*jointspd;
+			cout << ">>>> jacobian" << endl;
+			tm_jacobian::printMatrix(Jacobian);
+
+			cout << ">>>> effspd speed" << endl;
+			tm_jacobian::printMatrix(effspd);
+		}
 	}
 	else if(strncmp(argv[1],"FK",2) == 0)    // forward kinematics 
 	{
-		tm_jacobian::Matrix2DoubleArray(q_BeforeHomeOffset, q_forward);
-		tm_kinematics::forward(q_forward, T);
-		int num_sol = tm_kinematics::inverse(T, q_inv, q_forward);
-		cout << ">>>> forward T" << endl;
-		tm_jacobian::printMatrix(T,4,16);	
-		cout << ">>>> inverse q number of sols : " << num_sol << endl;
-		tm_jacobian::printMatrix(q_inv, 6, 6*(num_sol));
+		if(strncmp(argv[1],"FKG",3) == 0)
+		{
+			Eigen::Matrix<double,4,4> T07, T67, T06;
+			T67 <<  1, 0, 0, 0,
+					0, 1, 0, 0,
+					0, 0, 1, 0.235,
+					0, 0, 0, 1;
+
+			tm_jacobian::Matrix2DoubleArray(q_BeforeHomeOffset, q_forward);
+			tm_jacobian::Forward_Kinematics_gripper(q_forward,T);	
+
+			for (int i = 0; i < 4; ++i)
+				for (int j = 0; j < 4; ++j)
+					T07(i,j) = T[4*i+j];
+
+			T06 = T07*T67.inverse();
+
+			for (int i = 0; i < 4; ++i)
+				for (int j = 0; j < 4; ++j)
+					T[4*i+j] = T06(i,j);
+
+			int num_sol = tm_kinematics::inverse(T, q_inv, q_forward);
+
+			cout << ">>>> T07 " << endl;
+	    	tm_jacobian::printMatrixd(T07);
+	    	cout << ">>>> T06 " << endl;
+	    	tm_jacobian::printMatrixd(T06);
+			cout << ">>>> inverse q number of sols for T06 : " << num_sol << endl;
+			tm_jacobian::printMatrix(q_inv, 6, 6*(num_sol));
+		}
+		else
+		{
+			tm_jacobian::Matrix2DoubleArray(q_BeforeHomeOffset, q_forward);
+			tm_kinematics::forward(q_forward, T);
+			int num_sol = tm_kinematics::inverse(T, q_inv, q_forward);
+
+			cout << ">>>> T06" << endl;
+			tm_jacobian::printMatrix(T,4,16);	
+			cout << ">>>> inverse q number of sols : " << num_sol << endl;
+			tm_jacobian::printMatrix(q_inv, 6, 6*(num_sol));
+		}
 	}
 	else if(strncmp(argv[1],"TT",2) == 0)
 	{
