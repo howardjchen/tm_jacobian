@@ -44,15 +44,6 @@ namespace tm_jacobian {
 		return jacobian;                  
 	}
 
-	Eigen::Matrix<double, 3, 2> Forward_Linear_Jacobian_3(Eigen::Matrix<float, 6,1> q)
-	{
-		Eigen::Matrix<double, 3, 2> jacobian = Eigen::Matrix<double, 3, 2>::Zero();
-		jacobian <<  -A2*cos(q(1))*sin(q(0)), -A2*cos(q(0))*sin(q(1)),
-					  A2*cos(q(0))*cos(q(1)), -A2*sin(q(0))*sin(q(1)),
-					                      0.,           -A2*cos(q(1));
-		return jacobian;                  
-	}
-
 	Eigen::Matrix<float, 6, 6> Inverse_Jacobian(Eigen::Matrix<float, 6,1> q)
 	{
 		Eigen::Matrix<float, 6, 6> jacobian = Eigen::Matrix<float, 6, 6>::Zero();
@@ -83,6 +74,15 @@ namespace tm_jacobian {
 					                                                                                                                                                                                                                                                      0,                                                                                                                                                                                                                            c1,                                                                                                                                                                                                                 c1,                                                                                                                                                                                     c1,                                                                                                 c4*(c2*s1*s3 + c3*s1*s2) - s4*(s1*s2*s3 - c2*c3*s1),         - c1*c5 - s5*(c4*(s1*s2*s3 - c2*c3*s1) + s4*(c2*s1*s3 + c3*s1*s2)),
 					                                                                                                                                                                                                                                                      1,                                                                                                                                                                                                                             0,                                                                                                                                                                                                                  0,                                                                                                                                                                                      0,                                                                                                             c4*(c2*c3 - s2*s3) - s4*(c2*s3 + c3*s2),                              -s5*(c4*(c2*s3 + c3*s2) + s4*(c2*c3 - s2*s3));
 		return jacobian;
+	}
+
+	Eigen::Matrix<double, 3, 2> Forward_Linear_Jacobian_3(Eigen::Matrix<float, 6,1> q)
+	{
+		Eigen::Matrix<double, 3, 2> jacobian = Eigen::Matrix<double, 3, 2>::Zero();
+		jacobian <<  -A2*cos(q(1))*sin(q(0)), -A2*cos(q(0))*sin(q(1)),
+					  A2*cos(q(0))*cos(q(1)), -A2*sin(q(0))*sin(q(1)),
+					                      0.,           -A2*cos(q(1));
+		return jacobian;                  
 	}
 
 	void Forward_Kinematics_3(const double* q, double* T) 
