@@ -106,6 +106,34 @@ namespace tm_jacobian {
 		T[12] = 0;		 T[13] = 0;		    T[14] =   0;    T[15] = 1;
 	}
 
+	/*
+	[ cos(q1)*cos(q2), -cos(q1)*sin(q2), -sin(q1), a2*cos(q1)*cos(q2) - d3*sin(q1)]
+	[ cos(q2)*sin(q1), -sin(q1)*sin(q2),  cos(q1), d3*cos(q1) + a2*cos(q2)*sin(q1)]
+	[        -sin(q2),         -cos(q2),        0,                 d1 - a2*sin(q2)]
+	[               0,                0,        0,                               1]
+	*///The joint 3 kinemtices with offset on y direction from /base
+	void Forward_Kinematics_3(const double* q, double* T, double y_offset) 
+	{
+		const double _PI = M_PI;
+		const double _PI_2 = 0.5 * M_PI;
+		const double _2_PI = 2.0 * M_PI;
+		double d3 = y_offset;
+		double c1, c2, s1, s2;
+		
+		c1 = cos(q[0]); 
+		s1 = sin(q[0]);
+		c2 = cos(q[1] - _PI_2); 
+		s2 = sin(q[1] - _PI_2);
+
+		T[0] = c1*c2;    T[1]  = -c1*s2;    T[2]  = -s1;    T[3]  = A2*c1*c2-d3*s1;
+
+		T[4] = c2*s1;    T[5]  = -s1*s2;    T[6]  =  c1;    T[7]  = d3*c1+A2*c2*s1;
+
+		T[8] = -s2;		 T[9]  = -c2;       T[10] =   0;    T[11] = D1 - A2*s2; 
+
+		T[12] = 0;		 T[13] = 0;		    T[14] =   0;    T[15] = 1;
+	}
+
 	void Forward_Kinematics_4(const double* q, double* T) 
 	{
 		const double _PI = M_PI;
