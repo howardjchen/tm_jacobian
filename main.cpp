@@ -69,7 +69,7 @@ void help()
 	printf("*          FJG = forward jacobian with gripper\n");
 	printf("*          FKG = forward kinematics with gripper\n");
 	printf("* IJ: ./tm_jacobian IJ q1 q2 q3 q4 q5 q6 x' y' z' a' b' c' \n");
-	printf("* IK: ./tm_jacobian IK x y z a b c\n");
+	printf("* IK: ./tm_jacobian IK x y z rz ry rx\n");
 	printf("* FJ: ./tm_jacobian FJ q1 q2 q3 q4 q5 q6 qd1 qd2 qd3 qd4 qd5 qd6 \n");
 	printf("* FK: ./tm_jacobian FK q1 q2 q3 q4 q5 q6 \n");
 	printf("* Input  dim: joint(radius), cartesian(m)\n");
