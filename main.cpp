@@ -69,7 +69,7 @@ void help()
 	printf("*          FJG = forward jacobian with gripper\n");
 	printf("*          FKG = forward kinematics with gripper\n");
 	printf("* IJ: ./tm_jacobian IJ q1 q2 q3 q4 q5 q6 x' y' z' a' b' c' \n");
-	printf("* IK: ./tm_jacobian IK x y z rz ry rx\n");
+	printf("* IK: ./tm_jacobian IK x y z rx ry rz\n");
 	printf("* FJ: ./tm_jacobian FJ q1 q2 q3 q4 q5 q6 qd1 qd2 qd3 qd4 qd5 qd6 \n");
 	printf("* FK: ./tm_jacobian FK q1 q2 q3 q4 q5 q6 \n");
 	printf("* Input  dim: joint(radius), cartesian(m)\n");
@@ -143,9 +143,9 @@ int main(int argc, char const *argv[])
 	{
 		Eigen::Matrix<float, 6, 1>CartesianPosition = q_BeforeHomeOffset;
 		Eigen::Matrix<float, 4, 4> T_;
-	    Eigen::AngleAxisf rollAngle (CartesianPosition(3), Eigen::Vector3f::UnitZ());
+	    Eigen::AngleAxisf rollAngle (CartesianPosition(5), Eigen::Vector3f::UnitZ());
 	    Eigen::AngleAxisf yawAngle  (CartesianPosition(4), Eigen::Vector3f::UnitY());
-	    Eigen::AngleAxisf pitchAngle(CartesianPosition(5), Eigen::Vector3f::UnitX());
+	    Eigen::AngleAxisf pitchAngle(CartesianPosition(3), Eigen::Vector3f::UnitX());
 	    Eigen::Quaternion<float> quaternion_matrix = rollAngle * yawAngle * pitchAngle;
 	    Eigen::Matrix<float,3,3> RotationMatrix    = quaternion_matrix.matrix();
 	    int num_sol;
